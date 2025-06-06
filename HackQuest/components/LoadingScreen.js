@@ -1,20 +1,17 @@
-import React from 'react';    //before staring anything we need this
-
-//we need view--div conatiner,Image--to display image,StyleSheet--helps to create styles,Text-- to write
-// ActivityIndicator--to load the loading circle....
+// components/LoadingScreen.js
+import React from 'react';
 import { View, Image, StyleSheet, Text, ActivityIndicator } from 'react-native';
 
-//main function call
 export default function LoadingScreen() {
   return (
-    <View style={styles.container}>                                                                                       
+    <View style={styles.container}>
       <Image source={require('../assets/logo.png')} style={styles.logo} />
       <ActivityIndicator size="large" color="#00768" />
       <Text style={styles.text}>Loading .....</Text>
     </View>
   );
 }
-//Styling of the components
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
