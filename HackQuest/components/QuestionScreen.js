@@ -1,5 +1,6 @@
-// Question 20 ones here
+// One Question with user input field
 
+import { useLayoutEffect, useState } from "react";
 import {
   Button,
   Dimensions,
@@ -8,18 +9,23 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
-
-import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { answers, questions } from "../data/dummy";
 
-function QuestionScreen() {
+
+function QuestionScreen({ navigation, route }) {
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
   const [ansBgColor, setAnsBgColor] = useState("#ccc");
-  const questionNumber = 1;
+  const { width, height } = useWindowDimensions();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: `Question ${route.params.id}`,
+    });
+  });
 
   function changeTextHandler(enteredText) {
     setUserAnswer(enteredText);
@@ -27,7 +33,7 @@ function QuestionScreen() {
 
   async function submitHandler() {
     setSubmitDisabled(true);
-    if (userAnswer.toLowerCase() === answers[questionNumber].toLowerCase()) {
+    if (userAnswer.toLowerCase() === route.params.ans.toLowerCase()) {
       setAnsBgColor("lightgreen");
     } else {
       setAnsBgColor("red");
@@ -35,6 +41,10 @@ function QuestionScreen() {
     await new Promise((resolve) => setTimeout(resolve, 3000));
     setAnsBgColor("#ccc");
     setSubmitDisabled(false);
+  }
+
+  function isPotrait() {
+    return width < height;
   }
 
   return (
@@ -48,8 +58,13 @@ function QuestionScreen() {
             ]}
           >
             <View style={styles.container}>
-              <View style={styles.questionContainer}>
-                <Text style={styles.question}>{questions[questionNumber]}</Text>
+              <View
+                style={[
+                  styles.questionContainer,
+                  { marginBottom: isPotrait() ? 48 : 0 },
+                ]}
+              >
+                <Text style={styles.question}>{route.params.ques}</Text>
               </View>
               <View
                 style={[styles.inputContainer, { backgroundColor: ansBgColor }]}
@@ -80,7 +95,7 @@ export default QuestionScreen;
 
 const styles = StyleSheet.create({
   rootContainer: {
-    height: 700,
+    maxHeight: 700,
     paddingHorizontal: 16,
     paddingVertical: 64,
   },
@@ -93,7 +108,6 @@ const styles = StyleSheet.create({
   questionContainer: {
     justifyContent: "center",
     padding: 12,
-    marginBottom: 48,
     borderRadius: 8,
     height: "50%",
     backgroundColor: "#ccc",
