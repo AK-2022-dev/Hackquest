@@ -1,44 +1,60 @@
 // Question 20 ones here
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useCameraPermissions } from "expo-camera";
+import { useContext, useLayoutEffect } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import QuestionScreen from "../components/QuestionScreen";
-import questions from "../data/dummy";
-import scanQR from "./QrScanner";
+import QuestionsContextProvider, {
+  QuestionsContext,
+} from "../context/questions-context";
+import { QrScanner, scanQr } from "./QrScanner";
+import QuestionScreen from "./QuestionScreen";
 import GridItem from "./ui/GridItem";
 import IconButton from "./ui/IconButton";
 
 const Stack = createNativeStackNavigator();
 
-function StackNavigation() {
+function QuestionNavigator() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerRight: () => (
-          <IconButton icon="qr-code-outline" color="black" onPress={scanQR} />
-        ),
-      }}
-    >
-      <Stack.Screen
-        name="all-questions"
-        component={AllQuestionsScreen}
-        options={{ title: "All Questions" }}
-      />
-      <Stack.Screen name="question" component={QuestionScreen} />
-    </Stack.Navigator>
+    <QuestionsContextProvider>
+      <Stack.Navigator>
+        <Stack.Screen name="all-questions" component={AllQuestionsScreen} />
+        <Stack.Screen name="one-question" component={QuestionScreen} />
+        <Stack.Screen
+          name="qr-scanner"
+          component={QrScanner}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    </QuestionsContextProvider>
   );
 }
 
 function AllQuestionsScreen({ navigation }) {
   const { width, height } = useWindowDimensions();
+  const [permission, requestPermission] = useCameraPermissions();
+  const questionsCtx = useContext(QuestionsContext);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: "All Questions",
+      headerRight: () => (
+        <IconButton
+          icon="qr-code-outline"
+          color="black"
+          onPress={scanQr.bind(this, navigation, permission, requestPermission)}
+        />
+      ),
+    });
+  });
 
   function isPotrait() {
     return width < height;
   }
 
   function pressHandler(questionIdx) {
-    navigation.navigate("question", questions[questionIdx]);
+    navigation.navigate("one-question", questionsCtx.questions[questionIdx]);
   }
 
   return (
@@ -60,6 +76,7 @@ function AllQuestionsScreen({ navigation }) {
                     <GridItem
                       text={questionIdx + 1}
                       onPress={() => pressHandler(currentIdx)}
+                      unlocked={questionsCtx.questions[questionIdx].unlocked}
                       key={j}
                     />
                   );
@@ -76,7 +93,7 @@ function AllQuestionsScreen({ navigation }) {
   );
 }
 
-export default StackNavigation;
+export default QuestionNavigator;
 
 const styles = StyleSheet.create({
   container: {

@@ -1,5 +1,5 @@
-import AllQuestionsScreen from "../components/AllQuestionsScreen";
+import QuestionNavigator from "../components/AllQuestionsScreen";
 
 export default function Question() {
-  return <AllQuestionsScreen />
+  return <QuestionNavigator />
 }

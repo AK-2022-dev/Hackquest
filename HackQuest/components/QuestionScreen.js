@@ -1,5 +1,6 @@
 // One Question with user input field
 
+import { useCameraPermissions } from "expo-camera";
 import { useLayoutEffect, useState } from "react";
 import {
   Button,
@@ -14,16 +15,27 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { scanQr } from "./QrScanner";
+import IconButton from "./ui/IconButton";
 
 function QuestionScreen({ navigation, route }) {
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
   const [ansBgColor, setAnsBgColor] = useState("#ccc");
+
+  const [permission, requestPermission] = useCameraPermissions();
   const { width, height } = useWindowDimensions();
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: `Question ${route.params.id}`,
+      title: `Question ${route.params.quesNo}`,
+      headerRight: () => (
+        <IconButton
+          icon="qr-code-outline"
+          color="black"
+          onPress={scanQr.bind(this, navigation, permission, requestPermission)}
+        />
+      ),
     });
   });
 
@@ -33,14 +45,19 @@ function QuestionScreen({ navigation, route }) {
 
   async function submitHandler() {
     setSubmitDisabled(true);
-    if (userAnswer.toLowerCase() === route.params.ans.toLowerCase()) {
+    let isCorrect;
+    if (userAnswer.trim().toLowerCase() === route.params.ans.toLowerCase()) {
+      isCorrect = true;
       setAnsBgColor("lightgreen");
     } else {
+      isCorrect = false;
       setAnsBgColor("red");
     }
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    setAnsBgColor("#ccc");
-    setSubmitDisabled(false);
+    if (!isCorrect) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      setAnsBgColor("#ccc");
+      setSubmitDisabled(false);
+    }
   }
 
   function isPotrait() {
